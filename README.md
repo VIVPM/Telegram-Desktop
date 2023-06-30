@@ -1,1 +1,3 @@
 # Telegram-Desktop
+
+There is a need of social media which can handle various functionalities with security and without any lags. It provides unique and popular functions which should meet the user requirements. We are creating an app which can perform some functions such as download and searching the category, Text Messages, True caller bots and so on. It provides large cloud storage to users and groups with large number of users. Also resolving the difficulty in identifying a group chat from individual chat. It removes bugs and errors. It provides regular updates based on feedback and new features.  
