@@ -1,0 +1,7 @@
+DSA Data structure is a popular course teached to students for enhancing their effieciency .
+RAM Random Access Memory (RAM) is the hardware component used to store data .
+CPU CPU stands for the Central Processing Unit.
+ROM stands for Read-Only Memory.
+Algorithm  used to solve problems by logic.
+IDE An integrated development environment .
+BVB College belong to Kle tech university located in vidyanagar hubballi.

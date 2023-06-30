@@ -1,0 +1,5 @@
+Animation 100 15
+Motion_graphics 200 30
+Screencast 350 22
+Live_streaming 500 43
+Whiteboard 400 29

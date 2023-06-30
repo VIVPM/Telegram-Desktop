@@ -1,0 +1,5 @@
+gtla 100 
+coa 200
+dsa 250
+dms 300
+dbms 350 

@@ -1,0 +1,6 @@
+antman 1120 144
+spiderman 1110 120
+superman 1200 165
+batman 1290 150
+aquaman 1400 160
+ 
