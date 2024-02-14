@@ -1,7 +1,8 @@
 # Telegram-Desktop
-
+<p style = "text-align: justify;">
 There is a need for social media which can handle various functionalities with security and without any lags. It provides unique and popular functions which should meet the user requirements. I have created an application that can perform some functions such as downloading and searching the category, Text Messages, True caller bots, and so on. It provides large cloud storage to users and groups with a large number of users. Also resolving the difficulty in identifying a group chat from an individual chat. It removes bugs and errors. It provides regular updates based on feedback and new features.  
-<h2>Function Details</h2>
+</p>
+  <h2>Function Details</h2>
 
 <table>
   <tr>
