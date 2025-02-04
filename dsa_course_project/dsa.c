@@ -7,12 +7,13 @@
 #include<unistd.h>
 #include<limits.h>
 #define peoples 6
+#define MAX_WORD_LEN 20
+#define MAX_MEANING_LEN 200
 
 struct value
 {
     char w[20];
     char m[200];
-
 };
 
 typedef struct value ED;
@@ -23,225 +24,97 @@ ED data[20];
 ///output : Gives the required output asked by the user .
 ///Different data types of the structure node
 
-typedef struct node
-{
-    char word[10];
-    char meaning[100];
-    struct node *right;
-    struct node *left;
-
+typedef struct node {
+    char word[MAX_WORD_LEN];
+    char meaning[MAX_MEANING_LEN];
+    struct node *right, *left;
 } DIC;
 
 DIC *root=NULL;
 
 ///Allocating the memory to the node which is present within the tree
-DIC* create_node(char *word,char *meaning)
-{
-    DIC *newnode =(DIC*)malloc(sizeof(DIC));
-    strcpy(newnode->word,word);
-    strcpy(newnode->meaning,meaning);
-    newnode->right=NULL;
-    newnode->left=NULL;
+DIC* create_node(const char *word, const char *meaning) {
+    DIC *newnode = (DIC*)malloc(sizeof(DIC));
+    if (!newnode) {
+        fprintf(stderr, "Memory allocation failed\n");
+        return NULL;
+    }
+    strncpy(newnode->word, word, MAX_WORD_LEN - 1);
+    strncpy(newnode->meaning, meaning, MAX_MEANING_LEN - 1);
+    newnode->word[MAX_WORD_LEN - 1] = '\0';
+    newnode->meaning[MAX_MEANING_LEN - 1] = '\0';
+    newnode->right = newnode->left = NULL;
     return newnode;
 }
 
 ///Deleting the node on the request of the user
 
-void delete_(char *str)
-{
-    DIC *curr=NULL,*successor=NULL,*temp,*parent;
-    int res=0,flag=0;
-    if(root==NULL)
-    {
-        printf("\nSERVER NOT FOUND!");
-        return ;
+DIC* delete_node(DIC *root, const char *word) {
+    if (!root) return NULL;
+    int cmp = strcmp(root->word, word);
+    if (cmp > 0) {
+        root->left = delete_node(root->left, word);
+    } else if (cmp < 0) {
+        root->right = delete_node(root->right, word);
+    } else {
+        if (!root->left) {
+            DIC *temp = root->right;
+            free(root);
+            return temp;
+        } else if (!root->right) {
+            DIC *temp = root->left;
+            free(root);
+            return temp;
+        }
+        DIC *successor = root->right;
+        while (successor->left) successor = successor->left;
+        strncpy(root->word, successor->word, MAX_WORD_LEN - 1);
+        strncpy(root->meaning, successor->meaning, MAX_MEANING_LEN - 1);
+        root->right = delete_node(root->right, successor->word);
     }
+    return root;
+}
 
-    curr=root;
-    while(1)
-    {
-        res=strcmp(curr->word,str);
-        flag=res;
-        parent=curr;
-        if(res==0)
-        {
-            break;
-        }
-
-        else if(res>0)
-        {
-            curr=curr->left;
-        }
-
-        else if(res<0)
-        {
-            curr=curr->right;
-        }
-
-    }
-
-    if(curr->right==NULL)
-    {
-        if(curr->left==NULL && curr==root)
-        {
-            root=NULL;
-            free(curr);
-            return ;
-        }
-
-        else if(curr->left==NULL)
-        {
-            free(curr);
-            return;
-        }
-
-        else if(curr==root)
-        {
-            root =curr->left;
-            free(curr);
-            return;
-        }
-
-        flag > 0 ? (parent->left = curr->left) :(parent->right = curr->left);
-    }
-
-    else
-    {
-        temp=curr->right;
-        if(temp->left==NULL)
-        {
-            temp->left=curr->left;
-            if (curr == root)
-            {
-                root = temp;
-                free(curr);
-                return;
-            }
-
-            flag > 0 ? (parent->left = temp) : (parent->right = temp);
-        }
-
-        else
-        {
-            successor=temp;
-            while(successor->left!=NULL)
-            {
-                temp=successor;
-                successor=successor->left;
-            }
-
-            temp->left=successor->right;
-            successor->right=curr->right;
-            successor->left=curr->left;
-            free(curr);
-            if (curr == root)
-            {
-                root = successor;
-                free(curr);
-                return;
-            }
-
-            (flag > 0) ? (parent->left = successor) :(parent->right = successor);
-        }
-
-        free(curr);
-        return;
-    }
+void delete_(const char *word) {
+    root = delete_node(root, word);
 }
 
 ///Insert the value within a tree if the user requested
 
-void insert(char *word,char *meaning)
-{
-    DIC *parent=NULL,*curr=NULL,*node=NULL;
-    if(root==NULL)
-    {
-        root=create_node(word,meaning);
-        return ;
+void insert(const char *word, const char *meaning) {
+    DIC **curr = &root;
+    while (*curr) {
+        int cmp = strcmp((*curr)->word, word);
+        if (cmp == 0) {
+            printf("Word already exists. Updating meaning.\n");
+            strncpy((*curr)->meaning, meaning, MAX_MEANING_LEN - 1);
+            return;
+        }
+        curr = cmp > 0 ? &((*curr)->left) : &((*curr)->right);
     }
-    else
-    {
-        curr=root;
-        while(curr!=NULL)
-        {
-            parent=curr;
-            if(strcmp(curr->word,word)>0)
-            {
-                curr=curr->left;
-            }
-
-            else if(strcmp(curr->word,word)<0)
-            {
-                curr=curr->right;
-            }
-
-            else
-            {
-                printf("\n Already existing this word.");
-                return ;
-            }
-        }
-
-        node=create_node(word,meaning);
-        if(strcmp(parent->word,word)>0)
-        {
-            parent->left=node;
-        }
-
-        else if(strcmp(parent->word,word)<0)
-        {
-            parent->right=node;
-        }
-
-        return;
-    }
+    *curr = create_node(word, meaning);
 }
 
 ///Traversal with the data present in the tree
 
-void inorderTraversal(DIC *myNode)
-{
-    if(myNode==NULL)
-    {
-        return ;
-    }
-
-    else
-    {
-        inorderTraversal(myNode->left);
-        printf("Word : %s", myNode->word);
-        printf("\t Meaning : %s", myNode->meaning);
-        printf("\n");
-        inorderTraversal(myNode->right);
-    }
+void inorderTraversal(DIC *node) {
+    if (!node) return;
+    inorderTraversal(node->left);
+    printf("Word: %s\t Meaning: %s\n", node->word, node->meaning);
+    inorderTraversal(node->right);
 }
-void find_elements(char *word)
-{
-    int flag=0,res=0;
-    DIC *temp=root;
-    while(temp!=NULL)
-    {
-        res=strcmp(temp->word,word);
-        if(res==0)
-        {
-            printf("Meaning of the word is %s",temp->meaning);
-            flag=1;
-            break;
-        }
-        else if(res>0)
-        {
-            temp=temp->left;
-        }
-        else
-        {
-            temp=temp->right;
-        }
-    }
 
-    if(flag==0)
-    {
-        printf("Not found \n");
+void find_elements(const char *word) {
+    DIC *temp = root;
+    while (temp) {
+        int cmp = strcmp(temp->word, word);
+        if (cmp == 0) {
+            printf("Meaning of '%s': %s\n", temp->word, temp->meaning);
+            return;
+        }
+        temp = cmp > 0 ? temp->left : temp->right;
     }
+    printf("Word not found\n");
 }
 
 /**
@@ -251,80 +124,54 @@ Return Type: void
 Description: loads all the data available with search engine into appropriate data structure
 **/
 
-void load_from_file10()
-{
-    char a[20],b[100];
-    int i=0;
-    FILE *fp;
-    int news;
-    /// Open the file in read mode
-    fp = fopen("mno.txt", "r");
-
-    /// Check if the file was successfully opened
-    if (fp == NULL)
-    {
-        printf("SERVER NOT FOUND!\n");
+void load_from_file(const char *filename) {
+    FILE *fp = fopen(filename, "r");
+    if (!fp) {
+        perror("File open failed");
         return;
     }
-
-    /// Until the end of the file, read all the file data
-    while(!feof(fp))
-    {
-        fscanf(fp,"%s\t%[^\n]s", data[i].w, data[i].m);
-        fprintf(fp,"\n");
-        strcpy(a,data[i].w);
-        strcpy(b,data[i].m);
-        insert(a,b);
-        i++;
+    char word[MAX_WORD_LEN], meaning[MAX_MEANING_LEN];
+    while (fscanf(fp, "%19s %[^"]199[^"]", word, meaning) == 2) {
+        insert(word, meaning);
     }
-
     fclose(fp);
 }
 
-void mini_dictionery()
-{
-    char word[10],meaning[100];
-    int ch;
-    int i=0;
-    int flag=0;
-    load_from_file10();
-    while (1)
-    {
-        printf("\n1. Do you want to store your memories in this dictionary \n2. Delete your memory from the dictionary\n");
-        printf("3. Search for word and memory stored by you\n4. Check all the data you have ..\n");
-        printf("5. Exit\nEnter your choice:");
-        scanf(" %d", &ch);
-        getchar();
-        switch (ch)
-        {
-        case 1:
-            printf("Enter the key word :");
-            scanf("%s",word);
-            printf("Enter the Description regarding it:");
-            scanf(" %[^\n]s",meaning);
-            insert(word,meaning);
-            break;
-        case 2:
-            printf("Enter the key word to delete:");
-            scanf("%s",word);
-            delete_(word);
-            break;
-        case 3:
-            printf("Enter the key word to find:");
-            scanf(" %s",word);
-            find_elements(word);
-            break;
-        case 4:
-            inorderTraversal(root);
-            break;
-        case 5:
-            Beep(800,300);
-            return;
-            break;
-        default:
-            Beep(800,300);
-            printf("You have entered wrong option\n");
-            break;
+void mini_dictionary() {
+    int choice;
+    char word[MAX_WORD_LEN], meaning[MAX_MEANING_LEN];
+    load_from_file("dictionary.txt");
+    while (1) {
+        printf("\n1. Add Word\n2. Delete Word\n3. Search Word\n4. Display All Words\n5. Exit\nEnter choice: ");
+        scanf("%d", &choice);
+        getchar(); // Consume newline
+        switch (choice) {
+            case 1:
+                printf("Enter word: ");
+                scanf("%19s", word);
+                getchar(); // Consume newline
+                printf("Enter meaning: ");
+                fgets(meaning, MAX_MEANING_LEN, stdin);
+                meaning[strcspn(meaning, "\n")] = 0;
+                insert(word, meaning);
+                break;
+            case 2:
+                printf("Enter word to delete: ");
+                scanf("%19s", word);
+                delete_(word);
+                break;
+            case 3:
+                printf("Enter word to search: ");
+                scanf("%19s", word);
+                find_elements(word);
+                break;
+            case 4:
+                inorderTraversal(root);
+                break;
+            case 5:
+                return;
+            default:
+                printf("Invalid choice!\n");
         }
     }
 }
